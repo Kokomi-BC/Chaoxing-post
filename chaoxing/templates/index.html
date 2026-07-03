@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习通答案提交</title>
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --card-bg: #ffffff;
+    --primary: #1677ff;
+    --primary-hover: #4096ff;
+    --success: #52c41a;
+    --danger: #ff4d4f;
+    --warning: #faad14;
+    --text: #1f1f1f;
+    --text-secondary: #666;
+    --border: #e0e0e0;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary), #4096ff);
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(22,119,255,0.3);
+  }
+  .header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5px; }
+  .header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+
+  /* Container */
+  .container {
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 20px;
+  }
+
+  /* Two-column layout on wide screens */
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .cols .card { margin-bottom: 0; }
+
+  /* Card */
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon { font-size: 1.2rem; }
+
+  /* Form Grid */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .form-grid .full { grid-column: 1 / -1; }
+
+  /* Form Group */
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .form-group input,
+  .form-group textarea {
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
+    background: #fafafa;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(22,119,255,0.12);
+    background: #fff;
+  }
+  .form-group textarea { min-height: 70px; }
+  .form-group .hint {
+    font-size: 0.75rem;
+    color: #999;
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+  .btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn-outline:hover { background: #f0f5ff; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Preview Table */
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+  .preview-table th,
+  .preview-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .preview-table th {
+    background: #fafafa;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+  }
+  .preview-table tr:hover td { background: #fafafa; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .badge-single { background: #e6f4ff; color: #1677ff; }
+  .badge-multi  { background: #fff7e6; color: #d48806; }
+  .badge-judge  { background: #f6ffed; color: #389e0d; }
+
+  /* Stats Row */
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 70px;
+  }
+  .stat-item .num { font-size: 1.4rem; font-weight: 700; }
+  .stat-item .label { font-size: 0.75rem; color: var(--text-secondary); }
+
+  /* Result */
+  .result-box {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-top: 12px;
+    display: none;
+  }
+  .result-box.show { display: block; }
+  .result-box.success { background: #f6ffed; border: 1px solid #b7eb8f; }
+  .result-box.error { background: #fff2f0; border: 1px solid #ffccc7; }
+  .result-box .result-title { font-weight: 600; margin-bottom: 4px; }
+  .result-box.success .result-title { color: var(--success); }
+  .result-box.error .result-title { color: var(--danger); }
+  .result-box pre {
+    background: rgba(0,0,0,0.04);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    margin-top: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    animation: toastIn 0.35s ease, toastOut 0.3s ease 2.5s forwards;
+    max-width: 400px;
+  }
+  .toast-success { background: linear-gradient(135deg, #52c41a, #73d13d); }
+  .toast-error   { background: linear-gradient(135deg, #ff4d4f, #ff7875); }
+  .toast-info    { background: linear-gradient(135deg, #1677ff, #69b1ff); }
+  @keyframes toastIn  { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes toastOut { to { opacity: 0; transform: translateX(50px); } }
+
+  /* Loading */
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Collapsible */
+  .card-collapse .card-title { cursor: pointer; user-select: none; align-items: center; }
+  .card-collapse .card-body { overflow: hidden; }
+  .card-collapse .card-body > div { padding-top: 12px; }
+  .card-collapse .arrow { display: inline-block; transition: transform 0.25s; margin-left: auto; }
+  .card-collapse.collapsed .card-body { display: none; }
+  .card-collapse.collapsed .arrow { transform: rotate(-90deg); }
+  .card-collapse.collapsed { padding-bottom: 14px; }
+  .card-collapse.collapsed .card-title { margin-bottom: 0; }
+  @media (max-width: 900px) {
+    .cols { grid-template-columns: 1fr; margin-bottom: 0; }
+    .cols .card { margin-bottom: 16px; }
+  }
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.2rem; }
+    .card { padding: 16px; }
+    .container { padding: 0 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📚 学习通答案批量提交</h1>
+  <p>填写参数 → 预览 → 一键提交</p>
+</div>
+
+<div class="container">
+
+  <!-- ===== 双栏：请求参数 + 答案 ===== -->
+  <div class="cols">
+  <div class="card">
+    <div class="card-title"><span class="icon">🔗</span> 请求参数</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>作业页面网址（浏览器地址栏 URL）</label>
+        <input id="url" type="text" style="width:100%;">
+      </div>
+      <div class="form-group full">
+        <label>Cookie</label>
+        <textarea id="cookie" rows="2"></textarea>
+        <span class="hint">F12 → Network → Request Headers → Cookie</span>
+      </div>
+      <div class="form-group full">
+        <button class="btn btn-outline" id="btnParse" onclick="doParseUrl()">🔍 解析</button>
+      </div>
+    </div>
+  </div>
+  <!-- /请求参数卡片 -->
+
+  <!-- ===== 答案区域（右栏）===== -->
+  <div class="card">
+    <div class="card-title"><span class="icon">✏️</span> 答案（每行一个，空行跳过）</div>
+    <div class="form-group full">
+      <textarea id="answers_text" rows="10" placeholder="每行一个答案，输入后自动预览..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-outline" id="btnLoadFile" onclick="document.getElementById('fileInput').click()">📂 加载文件</button>
+      <input type="file" id="fileInput" accept=".md,.txt,.csv" style="display:none" onchange="loadFile(this)">
+    </div>
+  </div>
+  </div><!-- /cols -->
+
+  <!-- ===== 高级设置（默认折叠）===== -->
+  <div class="card card-collapse collapsed" id="advCard">
+    <div class="card-title" onclick="toggleAdv()">
+      <span class="icon">⚙️</span> 高级设置（解析后自动填入）
+      <svg class="arrow" width="16" height="16" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke="#999" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>第一题 ID</label>
+            <input id="first_question_id" type="text">
+          </div>
+          <div class="form-group">
+            <label>题目总数量</label>
+            <input id="total_questions" type="text" readonly style="background:#f5f5f5;color:#888;">
+          </div>
+          <div class="form-group">
+            <label>cpi</label>
+            <input id="cpi" type="text">
+          </div>
+          <div class="form-group">
+            <label>workRelationId</label>
+            <input id="workRelationId" type="text">
+          </div>
+          <div class="form-group">
+            <label>workAnswerId</label>
+            <input id="workAnswerId" type="text">
+          </div>
+          <div class="form-group">
+            <label>standardEnc</label>
+            <input id="standardEnc" type="text">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 答案解析预览（解析/输入后显示）===== -->
+  <div class="card" id="previewCard" style="display:none;">
+    <div class="card-title"><span class="icon">📋</span> 答案解析预览</div>
+    <div class="form-group full" style="margin-bottom:12px;">
+      <label>题型分布（可修改，三数之和须等于题目总数）</label>
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1;">
+          <input id="dist_single" type="number" min="0" placeholder="单选数" style="width:100%;" oninput="onDistChange()">
+        </div>
+        <div style="flex:1;">
+          <input id="dist_multi" type="number" min="0" placeholder="多选题数" style="width:100%;" oninput="onDistChange()">
+        </div>
+        <div style="flex:1;">
+          <input id="dist_judge" type="number" min="0" placeholder="判断题数" style="width:100%;" oninput="onDistChange()">
+        </div>
+      </div>
+    </div>
+    <div id="previewArea"></div>
+  </div>
+
+  <!-- ===== 提交按钮（预览成功后显示）===== -->
+  <div class="btn-row" id="submitRow" style="justify-content: center; display: none;">
+    <button class="btn btn-primary" id="btnSubmit" onclick="doSubmit()" style="font-size:1rem; padding:12px 48px;">
+      🚀 提交答案
+    </button>
+  </div>
+
+  <!-- ===== 结果 ===== -->
+  <div id="resultBox" class="result-box"></div>
+
+</div>
+
+<!-- Toast 容器 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// Toast
+// ============================================================
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ============================================================
+// 解析页面 URL → 自动填入参数
+// ============================================================
+async function doParseUrl() {
+  const pageUrl = document.getElementById('url').value.trim();
+  const cookie = document.getElementById('cookie').value.trim();
+  if (!pageUrl) { showToast('请先粘贴作业页面URL', 'error'); return; }
+  if (!cookie) { showToast('请先填写Cookie', 'error'); return; }
+
+  const btn = document.getElementById('btnParse');
+  btn.disabled = true;
+  btn.textContent = '⏳ ...';
+
+  try {
+    const resp = await fetch('/api/parse-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page_url: pageUrl, cookie: cookie }),
+    });
+    const r = await resp.json();
+    if (!resp.ok) { showToast(r.error, 'error'); return; }
+
+    // 自动填入所有从页面提取的参数
+    document.getElementById('url').value = r.submit_url;
+    if (r.cpi)            document.getElementById('cpi').value = r.cpi;
+    if (r.workRelationId) document.getElementById('workRelationId').value = r.workRelationId;
+    if (r.workAnswerId) document.getElementById('workAnswerId').value = r.workAnswerId;
+    if (r.standardEnc)    document.getElementById('standardEnc').value = r.standardEnc;
+    if (r.first_question_id) document.getElementById('first_question_id').value = r.first_question_id;
+    // 保存页面提取的实际题目ID列表和题目信息
+    if (r.question_ids && r.question_ids.length) {
+      _questionIds = r.question_ids;
+      _questions = r.questions || null;
+      document.getElementById('first_question_id').placeholder = `已提取 ${r.question_ids.length} 题ID`;
+      document.getElementById('total_questions').value = r.question_ids.length;
+      // 触发预览刷新以显示题目文本
+      if (_lastPreview) renderPreviewTable(_lastPreview);
+    }
+
+    // 展开高级设置卡片
+    // expandAdv();  // 解析后不再自动展开，用户手动点击
+
+    // 显示提取摘要
+    const allOk = r.token && r.totalQuestionNum && r.question_ids && r.question_ids.length;
+    if (allOk) {
+      showToast(`✅ 解析成功：${r.question_ids.length}题`, 'success');
+    } else {
+      showToast('⚠️ 部分参数未提取，请检查页面或Cookie', 'info');
+    }
+
+    if (r.warnings && r.warnings.length) {
+      r.warnings.forEach(w => showToast(w, 'info'));
+    }
+
+    // 如果提取失败，在结果区显示调试信息
+    if (r.debug) {
+      document.getElementById('resultBox').className = 'result-box error show';
+      document.getElementById('resultBox').innerHTML = `
+        <div class="result-title">⚠️ 部分参数未提取，请从页面手动获取</div>
+        <div>F12 → 在页面HTML中搜索: <code>token</code> <code>totalQuestionNum</code></div>
+      `;
+    }
+  } catch (e) {
+    showToast('解析失败: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 解析';
+  }
+}
+
+// ============================================================
+// 收集表单数据
+// ============================================================
+function collectData() {
+  return {
+    url: document.getElementById('url').value.trim(),
+    cookie: document.getElementById('cookie').value.trim(),
+    first_question_id: document.getElementById('first_question_id').value.trim(),
+    total_questions: parseInt(document.getElementById('total_questions').value) || window._previewCount || 0,
+    type_distribution: (() => {
+      const s = parseInt(document.getElementById('dist_single').value) || 0;
+      const m = parseInt(document.getElementById('dist_multi').value) || 0;
+      const j = parseInt(document.getElementById('dist_judge').value) || 0;
+      return (s + m + j > 0) ? `${s},${m},${j}` : '';
+    })(),
+    cpi: document.getElementById('cpi').value.trim(),
+    workRelationId: document.getElementById('workRelationId').value.trim(),
+    workAnswerId: document.getElementById('workAnswerId').value.trim(),
+    standardEnc: document.getElementById('standardEnc').value.trim(),
+    answers_text: document.getElementById('answers_text').value,
+    question_ids: _questionIds,
+  };
+}
+
+// ============================================================
+// 加载文件
+// ============================================================
+function loadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('answers_text').value = e.target.result;
+    showToast(`已加载：${file.name}`, 'success');
+    doPreview();
+  };
+  reader.readAsText(file, 'UTF-8');
+  input.value = '';
+}
+
+// ============================================================
+// 预览答案（自动触发）
+// ============================================================
+let _previewTimer = null;
+let _previewCount = 0;
+let _lastPreview = null;  // 缓存最近一次预览数据
+let _questionIds = null;   // 从页面提取的实际题目ID列表
+let _questions = null;     // 从页面提取的题目信息（含文本）
+
+async function doPreview() {
+  const text = document.getElementById('answers_text').value;
+  if (!text.trim()) {
+    document.getElementById('previewArea').innerHTML = '';
+    document.getElementById('previewCard').style.display = 'none';
+    document.getElementById('submitRow').style.display = 'none';
+    document.getElementById('total_questions').value = '';
+    document.getElementById('dist_single').value = '';
+    document.getElementById('dist_multi').value = '';
+    document.getElementById('dist_judge').value = '';
+    _previewCount = 0;
+    _lastPreview = null;
+    return;
+  }
+
+  try {
+    const resp = await fetch('/api/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers_text: text }),
+    });
+    const result = await resp.json();
+
+    if (!resp.ok) {
+      document.getElementById('previewArea').innerHTML = '';
+      document.getElementById('previewCard').style.display = 'none';
+      document.getElementById('submitRow').style.display = 'none';
+      _lastPreview = null;
+      return;
+    }
+
+    _lastPreview = result;
+    _previewCount = result.count;
+    document.getElementById('total_questions').value = result.count;
+    document.getElementById('dist_single').value = result.types_auto.single;
+    document.getElementById('dist_multi').value = result.types_auto.multi;
+    document.getElementById('dist_judge').value = result.types_auto.judge;
+    document.getElementById('previewCard').style.display = 'block';
+    document.getElementById('submitRow').style.display = 'flex';
+
+    // 校验：题目ID数量与答案数量是否一致
+    if (_questionIds && _questionIds.length !== result.count) {
+      showToast(`⚠️ 题目ID数(${_questionIds.length}) ≠ 答案数(${result.count})，请检查`, 'info');
+    }
+
+    renderPreviewTable(result);
+  } catch (e) {
+    // 静默失败
+  }
+}
+
+function renderPreviewTable(result) {
+  // 根据当前分布输入框计算实际展示的题型
+  const s = parseInt(document.getElementById('dist_single').value) || 0;
+  const m = parseInt(document.getElementById('dist_multi').value) || 0;
+  const j = parseInt(document.getElementById('dist_judge').value) || 0;
+
+  let displayTypes;
+  if (s + m + j === result.count) {
+    // 用户修改了分布且和等于总数 → 按分布显示
+    displayTypes = [];
+    displayTypes.push(...Array(s).fill(0));
+    displayTypes.push(...Array(m).fill(1));
+    displayTypes.push(...Array(j).fill(3));
+  } else {
+    // 和不等于总数 → 用自动识别结果
+    displayTypes = result.preview.map(p => p.type);
+  }
+
+  const typeCount = { 0: displayTypes.filter(t => t === 0).length, 1: displayTypes.filter(t => t === 1).length, 3: displayTypes.filter(t => t === 3).length };
+  const typeName = { 0: '单选', 1: '多选', 3: '判断' };
+  const badgeClass = { 0: 'single', 1: 'multi', 3: 'judge' };
+
+  // 是否有从页面解析的题目信息
+  const hasQuestions = _questions && _questions.length > 0;
+  const hasOptions = hasQuestions && _questions.some(q => q.options && q.options.length > 0);
+
+  document.getElementById('previewArea').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-item"><div class="num">${result.count}</div><div class="label">总题数</div></div>
+      <div class="stat-item"><div class="num" style="color:#1677ff">${typeCount[0]}</div><div class="label">单选</div></div>
+      <div class="stat-item"><div class="num" style="color:#d48806">${typeCount[1]}</div><div class="label">多选</div></div>
+      <div class="stat-item"><div class="num" style="color:#389e0d">${typeCount[3]}</div><div class="label">判断</div></div>
+      ${hasQuestions ? `<div class="stat-item"><div class="num" style="color:#722ed1">${_questions.length}</div><div class="label">解析题目</div></div>` : ''}
+    </div>
+    <div style="overflow-x:auto;">
+    <table class="preview-table">
+      <thead><tr><th>#</th><th>答案</th><th>类型</th>${hasQuestions ? '<th>题目</th>' : ''}${hasOptions ? '<th>选项</th>' : ''}</tr></thead>
+      <tbody>
+        ${result.preview.map((p, i) => {
+          const t = displayTypes[i] !== undefined ? displayTypes[i] : p.type;
+          const q = hasQuestions ? (_questions[i] || {}) : {};
+          const opts = q.options || [];
+          const optsHtml = opts.map(o => `<span style="white-space:nowrap;margin-right:6px;"><b>${o.letter}</b>.${o.text}</span>`).join('<br>');
+          return `<tr>
+            <td>${p.index}</td>
+            <td><strong>${p.answer}</strong></td>
+            <td><span class="badge badge-${badgeClass[t]}">${typeName[t]}</span></td>
+            ${hasQuestions ? `<td style="max-width:250px;font-size:0.8rem;color:#555;">${q.text || ''}</td>` : ''}
+            ${hasOptions ? `<td style="max-width:280px;font-size:0.78rem;color:#555;line-height:1.5;">${optsHtml}</td>` : ''}
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+  `;
+}
+
+function onDistChange() {
+  if (!_lastPreview) return;
+  const s = parseInt(document.getElementById('dist_single').value) || 0;
+  const m = parseInt(document.getElementById('dist_multi').value) || 0;
+  const j = parseInt(document.getElementById('dist_judge').value) || 0;
+  if (s + m + j === _previewCount) {
+    renderPreviewTable(_lastPreview);
+  }
+}
+
+function autoPreview() {
+  clearTimeout(_previewTimer);
+  _previewTimer = setTimeout(doPreview, 400);
+}
+
+// ============================================================
+// 提交答案
+// ============================================================
+async function doSubmit() {
+  const data = collectData();
+
+  // 基本校验
+  if (!data.url)     { showToast('请输入请求网址', 'error'); return; }
+  if (!data.cookie)  { showToast('请输入 Cookie', 'error'); return; }
+  if (!data.question_ids || !data.question_ids.length) { showToast('请先用"解析"功能提取题目ID', 'error'); return; }
+  if (!data.total_questions || data.total_questions < 1) { showToast('请先输入答案以自动预览', 'error'); return; }
+  if (!data.answers_text) { showToast('请输入答案', 'error'); return; }
+
+  // 校验题目ID数量与答案数量
+  if (data.question_ids.length !== _previewCount) {
+    showToast(`⚠️ 题目ID数(${data.question_ids.length}) ≠ 答案数(${_previewCount})，请检查答案`, 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 提交中...';
+
+  const resultBox = document.getElementById('resultBox');
+  resultBox.className = 'result-box';
+  resultBox.innerHTML = '';
+
+  try {
+    const resp = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const result = await resp.json();
+
+    if (result.success) {
+      resultBox.className = 'result-box success show';
+      resultBox.innerHTML = `
+        <div class="result-title">✅ ${result.msg || '答案保存成功！'}</div>
+        <div>状态码：${result.status_code} | 题目数：${result.total} | 题型：${result.types_summary}</div>
+        ${result.json ? `<pre>${JSON.stringify(result.json, null, 2)}</pre>` : ''}
+      `;
+      showToast(result.msg || '答案保存成功！', 'success');
+    } else {
+      const errMsg = result.msg || result.error || '未知错误';
+      resultBox.className = 'result-box error show';
+      resultBox.innerHTML = `
+        <div class="result-title">❌ 提交失败</div>
+        <div>${errMsg}</div>
+        ${result.response_text ? `<pre>${result.response_text}</pre>` : ''}
+      `;
+      showToast(errMsg, 'error');
+    }
+
+    // 滚动到结果
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (e) {
+    showToast('网络错误：' + e.message, 'error');
+    resultBox.className = 'result-box error show';
+    resultBox.innerHTML = `<div class="result-title">❌ 请求异常</div><div>${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 提交答案';
+  }
+}
+
+// 绑定答案输入框自动预览
+document.getElementById('answers_text').addEventListener('input', autoPreview);
+
+// 绑定题型分布修改实时更新
+['dist_single', 'dist_multi', 'dist_judge'].forEach(id => {
+  document.getElementById(id).addEventListener('input', onDistChange);
+});
+
+// Ctrl+Enter 提交
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'Enter') {
+    e.preventDefault();
+    doSubmit();
+  }
+});
+
+// 高级设置折叠
+function toggleAdv() {
+  const card = document.getElementById('advCard');
+  card.classList.toggle('collapsed');
+}
+function expandAdv() {
+  const card = document.getElementById('advCard');
+  card.classList.remove('collapsed');
+}
+</script>
+
+</body>
+</html>
