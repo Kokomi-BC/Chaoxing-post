@@ -431,8 +431,12 @@ async function doParseUrl() {
       _questions = r.questions || null;
       document.getElementById('first_question_id').placeholder = `已提取 ${r.question_ids.length} 题ID`;
       document.getElementById('total_questions').value = r.question_ids.length;
-      // 触发预览刷新以显示题目文本
-      if (_lastPreview) renderPreviewTable(_lastPreview);
+      // 显示题目预览（无答案时仅显示题目和选项）
+      if (_lastPreview) {
+        renderPreviewTable(_lastPreview);
+      } else if (_questions && _questions.length) {
+        renderQuestionOnly();
+      }
     }
 
     // 展开高级设置卡片
@@ -638,6 +642,38 @@ function autoPreview() {
   _previewTimer = setTimeout(doPreview, 400);
 }
 
+// 仅显示题目和选项（无答案时用）
+function renderQuestionOnly() {
+  if (!_questions || !_questions.length) return;
+  const hasOptions = _questions.some(q => q.options && q.options.length > 0);
+  document.getElementById('previewCard').style.display = 'block';
+  document.getElementById('dist_single').value = '';
+  document.getElementById('dist_multi').value = '';
+  document.getElementById('dist_judge').value = '';
+  document.getElementById('previewArea').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-item"><div class="num">${_questions.length}</div><div class="label">总题数</div></div>
+      <div class="stat-item"><div class="num" style="color:#722ed1">${_questions.length}</div><div class="label">解析题目</div></div>
+    </div>
+    <div style="overflow-x:auto;">
+    <table class="preview-table">
+      <thead><tr><th>#</th><th>题目</th>${hasOptions ? '<th>选项</th>' : ''}</tr></thead>
+      <tbody>
+        ${_questions.map((q, i) => {
+          const opts = q.options || [];
+          const optsHtml = opts.map(o => `<span style="white-space:nowrap;margin-right:6px;"><b>${o.letter}</b>.${o.text}</span>`).join('<br>');
+          return `<tr>
+            <td>${i + 1}</td>
+            <td style="max-width:300px;font-size:0.82rem;color:#555;">${q.text || ''}</td>
+            ${hasOptions ? `<td style="max-width:280px;font-size:0.78rem;color:#555;line-height:1.5;">${optsHtml}</td>` : ''}
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+  `;
+}
+
 // ============================================================
 // 提交答案
 // ============================================================
@@ -703,6 +739,12 @@ async function doSubmit() {
     btn.innerHTML = '🚀 提交答案';
   }
 }
+
+// URL 变化时自动清除结果框
+document.getElementById('url').addEventListener('input', function() {
+  const rb = document.getElementById('resultBox');
+  if (rb.className.includes('show')) { rb.className = 'result-box'; rb.innerHTML = ''; }
+});
 
 // 绑定答案输入框自动预览
 document.getElementById('answers_text').addEventListener('input', autoPreview);
