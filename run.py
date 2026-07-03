@@ -39,6 +39,11 @@ def index():
     return resp
 
 
+@app.route("/favicon.ico")
+def favicon():
+    return "", 204
+
+
 @app.route("/api/preview", methods=["POST"])
 def preview():
     """预览：解析答案文本，返回答案列表和自动识别的题型分布。"""

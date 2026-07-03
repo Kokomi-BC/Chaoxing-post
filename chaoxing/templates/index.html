@@ -606,7 +606,7 @@ function renderPreviewTable(result) {
     </div>
     <div style="overflow-x:auto;">
     <table class="preview-table">
-      <thead><tr><th>#</th><th>答案</th><th>类型</th>${hasQuestions ? '<th>题目</th>' : ''}${hasOptions ? '<th>选项</th>' : ''}</tr></thead>
+      <thead><tr><th>#</th><th>类型</th>${hasQuestions ? '<th>题目</th>' : ''}${hasOptions ? '<th>选项</th>' : ''}<th>答案</th></tr></thead>
       <tbody>
         ${result.preview.map((p, i) => {
           const t = displayTypes[i] !== undefined ? displayTypes[i] : p.type;
@@ -615,10 +615,10 @@ function renderPreviewTable(result) {
           const optsHtml = opts.map(o => `<span style="white-space:nowrap;margin-right:6px;"><b>${o.letter}</b>.${o.text}</span>`).join('<br>');
           return `<tr>
             <td>${p.index}</td>
-            <td><strong>${p.answer}</strong></td>
             <td><span class="badge badge-${badgeClass[t]}">${typeName[t]}</span></td>
             ${hasQuestions ? `<td style="max-width:250px;font-size:0.8rem;color:#555;">${q.text || ''}</td>` : ''}
             ${hasOptions ? `<td style="max-width:280px;font-size:0.78rem;color:#555;line-height:1.5;">${optsHtml}</td>` : ''}
+            <td><strong>${p.answer}</strong></td>
           </tr>`;
         }).join('')}
       </tbody>
