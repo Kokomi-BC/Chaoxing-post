@@ -15,12 +15,15 @@ TF_MAPPING = {"A": "true", "B": "false"}
 
 
 def parse_answers_text(text: str) -> list[str]:
-    """从文本解析答案列表，自动过滤序号和空白行。"""
+    """从文本解析答案列表，自动过滤序号、空白行和中文行。"""
     import re
     answers = []
     for line in text.splitlines():
         stripped = line.strip()
         if not stripped or stripped.startswith("#"):
+            continue
+        # 跳过包含中文的行（如"一、选择题"等标题行）
+        if re.search(r'[\u4e00-\u9fff]', stripped):
             continue
         # 去除行首序号（如 "1." "1、" "1)" "1. " "1 "）
         stripped = re.sub(r'^\d+[\.\、\)\s]\s*', '', stripped)

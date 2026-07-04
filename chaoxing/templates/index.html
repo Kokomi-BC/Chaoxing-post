@@ -305,6 +305,7 @@
     </div>
     <div class="btn-row">
       <button class="btn btn-outline" id="btnLoadFile" onclick="document.getElementById('fileInput').click()">📂 加载文件</button>
+      <button class="btn btn-outline" id="btnExport" onclick="copyExportPrompt()" style="display:none;">📋 导出提示词</button>
       <input type="file" id="fileInput" accept=".md,.txt,.csv" style="display:none" onchange="loadFile(this)">
     </div>
   </div>
@@ -418,8 +419,8 @@ async function doParseUrl() {
     const r = await resp.json();
     if (!resp.ok) { showToast(r.error, 'error'); return; }
 
-    // 自动填入所有从页面提取的参数
-    document.getElementById('url').value = r.submit_url;
+    // 保存提交URL（不覆盖页面URL输入框，以便重新解析）
+    _submitUrl = r.submit_url;
     if (r.cpi)            document.getElementById('cpi').value = r.cpi;
     if (r.workRelationId) document.getElementById('workRelationId').value = r.workRelationId;
     if (r.workAnswerId) document.getElementById('workAnswerId').value = r.workAnswerId;
@@ -434,6 +435,7 @@ async function doParseUrl() {
       // 显示题目预览（无答案时仅显示题目和选项）
       if (_lastPreview) {
         renderPreviewTable(_lastPreview);
+        document.getElementById('btnExport').style.display = (_questions && _questions.length) ? '' : 'none';
       } else if (_questions && _questions.length) {
         renderQuestionOnly();
       }
@@ -474,8 +476,10 @@ async function doParseUrl() {
 // 收集表单数据
 // ============================================================
 function collectData() {
+  // 优先使用解析后的提交URL，否则使用输入框中的URL
+  const submitUrl = _submitUrl || document.getElementById('url').value.trim();
   return {
-    url: document.getElementById('url').value.trim(),
+    url: submitUrl,
     cookie: document.getElementById('cookie').value.trim(),
     first_question_id: document.getElementById('first_question_id').value.trim(),
     total_questions: parseInt(document.getElementById('total_questions').value) || window._previewCount || 0,
@@ -511,6 +515,56 @@ function loadFile(input) {
 }
 
 // ============================================================
+// 导出提示词到剪贴板
+// ============================================================
+async function copyExportPrompt() {
+  if (!_lastPreview || !_questions || !_questions.length) {
+    showToast('请先解析页面并输入答案', 'error');
+    return;
+  }
+
+  const s = parseInt(document.getElementById('dist_single').value) || 0;
+  const m = parseInt(document.getElementById('dist_multi').value) || 0;
+  const j = parseInt(document.getElementById('dist_judge').value) || 0;
+  let displayTypes;
+  if (s + m + j === _previewCount) {
+    displayTypes = [];
+    displayTypes.push(...Array(s).fill(0));
+    displayTypes.push(...Array(m).fill(1));
+    displayTypes.push(...Array(j).fill(3));
+  } else {
+    displayTypes = _lastPreview.preview.map(p => p.type);
+  }
+
+  let lines = ['仅给出答案，判断题A正确，B错误，不要给出中文', ''];
+
+  for (let i = 0; i < _questions.length && i < _lastPreview.preview.length; i++) {
+    const q = _questions[i];
+    const p = _lastPreview.preview[i];
+    const t = displayTypes[i] !== undefined ? displayTypes[i] : p.type;
+
+    lines.push(`${i + 1}. ${q.text || '(无题目文本)'}`);
+    if (t === 3) {
+      lines.push('   A. 正确');
+      lines.push('   B. 错误');
+    } else if (q.options && q.options.length) {
+      q.options.forEach(o => {
+        lines.push(`   ${o.letter}. ${o.text}`);
+      });
+    }
+    lines.push('');
+  }
+
+  const text = lines.join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('✅ 提示词已复制到剪贴板', 'success');
+  } catch (e) {
+    showToast('复制失败：' + e.message, 'error');
+  }
+}
+
+// ============================================================
 // 预览答案（自动触发）
 // ============================================================
 let _previewTimer = null;
@@ -518,6 +572,7 @@ let _previewCount = 0;
 let _lastPreview = null;  // 缓存最近一次预览数据
 let _questionIds = null;   // 从页面提取的实际题目ID列表
 let _questions = null;     // 从页面提取的题目信息（含文本）
+let _submitUrl = null;     // 解析后构造的提交URL（不覆盖页面URL输入框）
 
 async function doPreview() {
   const text = document.getElementById('answers_text').value;
@@ -525,6 +580,7 @@ async function doPreview() {
     document.getElementById('previewArea').innerHTML = '';
     document.getElementById('previewCard').style.display = 'none';
     document.getElementById('submitRow').style.display = 'none';
+    document.getElementById('btnExport').style.display = 'none';
     document.getElementById('total_questions').value = '';
     document.getElementById('dist_single').value = '';
     document.getElementById('dist_multi').value = '';
@@ -546,6 +602,7 @@ async function doPreview() {
       document.getElementById('previewArea').innerHTML = '';
       document.getElementById('previewCard').style.display = 'none';
       document.getElementById('submitRow').style.display = 'none';
+      document.getElementById('btnExport').style.display = 'none';
       _lastPreview = null;
       return;
     }
@@ -558,6 +615,8 @@ async function doPreview() {
     document.getElementById('dist_judge').value = result.types_auto.judge;
     document.getElementById('previewCard').style.display = 'block';
     document.getElementById('submitRow').style.display = 'flex';
+    // 有题目信息时显示导出按钮
+    document.getElementById('btnExport').style.display = (_questions && _questions.length) ? '' : 'none';
 
     // 校验：题目ID数量与答案数量是否一致
     if (_questionIds && _questionIds.length !== result.count) {
@@ -647,6 +706,7 @@ function renderQuestionOnly() {
   if (!_questions || !_questions.length) return;
   const hasOptions = _questions.some(q => q.options && q.options.length > 0);
   document.getElementById('previewCard').style.display = 'block';
+  document.getElementById('btnExport').style.display = 'none';
   document.getElementById('dist_single').value = '';
   document.getElementById('dist_multi').value = '';
   document.getElementById('dist_judge').value = '';
@@ -740,11 +800,29 @@ async function doSubmit() {
   }
 }
 
-// URL 变化时自动清除结果框
-document.getElementById('url').addEventListener('input', function() {
+// URL 变化时自动清除解析结果
+function clearParsedResults() {
+  _questionIds = null;
+  _questions = null;
+  _submitUrl = null;
+  _lastPreview = null;
+  _previewCount = 0;
+  document.getElementById('previewCard').style.display = 'none';
+  document.getElementById('previewArea').innerHTML = '';
+  document.getElementById('submitRow').style.display = 'none';
+  document.getElementById('btnExport').style.display = 'none';
+  document.getElementById('total_questions').value = '';
+  document.getElementById('first_question_id').value = '';
+  document.getElementById('first_question_id').placeholder = '';
+  document.getElementById('cpi').value = '';
+  document.getElementById('workRelationId').value = '';
+  document.getElementById('workAnswerId').value = '';
+  document.getElementById('standardEnc').value = '';
   const rb = document.getElementById('resultBox');
-  if (rb.className.includes('show')) { rb.className = 'result-box'; rb.innerHTML = ''; }
-});
+  rb.className = 'result-box';
+  rb.innerHTML = '';
+}
+document.getElementById('url').addEventListener('input', clearParsedResults);
 
 // 绑定答案输入框自动预览
 document.getElementById('answers_text').addEventListener('input', autoPreview);
